@@ -11,12 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Firebase initialization
-const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-if (!serviceAccountPath) {
-  console.error("❌ GOOGLE_APPLICATION_CREDENTIALS is not defined in .env");
-  process.exit(1);
-}
-const serviceAccount = require(path.resolve(serviceAccountPath));
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -24,7 +19,7 @@ admin.initializeApp({
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://your-frontend.vercel.app"],
+    origin: ["http://localhost:5173", "https://admitease.vercel.app"],
     credentials: true,
   })
 );
