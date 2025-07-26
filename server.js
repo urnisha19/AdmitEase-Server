@@ -19,12 +19,12 @@ admin.initializeApp({
 });
 
 // Middleware
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "https://admit-ease.vercel.app/"],
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: "https://admit-ease.vercel.app", 
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // Start server after DB connection
