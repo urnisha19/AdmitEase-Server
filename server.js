@@ -3,15 +3,15 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const { connectDB } = require("./config/db");
+const serverless = require("serverless-http");
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
 
 // Initialize Firebase Admin
 const admin = require("firebase-admin");
-const serviceAccount = require("GOOGLE_APPLICATION_CREDENTIALS");
+const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS); // Use env var path
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -19,15 +19,17 @@ admin.initializeApp({
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173", // Consider making this dynamic or permissive for production
     credentials: true,
   })
 );
 app.use(express.json());
 
-// Connect to MongoDB then start server
-connectDB()
-  .then(() => {
+// Routes and DB connection wrapped in an async function
+async function initApp() {
+  try {
+    await connectDB();
+
     // Load routes
     const admissionRoutes = require("./routes/admissionRoutes");
     const reviewRoutes = require("./routes/reviewRoutes");
@@ -38,18 +40,20 @@ connectDB()
     app.use("/api/reviews", reviewRoutes);
     app.use("/api/users", userRoutes);
 
-    // For Static files uploads
+    // Serve static files uploads
     app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-    // check or root route
+    // Root route check
     app.get("/", (req, res) => res.send("✅ AdmitEase server is running!"));
-
-    // Start the server
-    app.listen(port, () => {
-      console.log(`🚀 Server running at http://localhost:${port}`);
-    });
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error("❌ Failed to connect to MongoDB", err);
-    process.exit(1);
-  });
+    // No process.exit here because serverless function shouldn't kill itself
+  }
+}
+
+// Call the async init function (you can also await this in serverless but this is fine)
+initApp();
+
+// Export the express app and the serverless handler
+module.exports = app;
+module.exports.handler = serverless(app);
