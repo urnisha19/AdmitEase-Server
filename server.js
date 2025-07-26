@@ -11,7 +11,9 @@ const app = express();
 
 // Initialize Firebase Admin
 const admin = require("firebase-admin");
-const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
