@@ -55,5 +55,5 @@ async function initApp() {
 initApp();
 
 // Export the express app and the serverless handler
-module.exports = app;
-module.exports.handler = serverless(app);
+const handler = serverless(app);
+module.exports = { app, handler };
